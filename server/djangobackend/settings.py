@@ -27,7 +27,10 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ["kerim-1.eu-gb.mybluemix.net"]
+ALLOWED_HOSTS = [
+    "kerim-1.eu-gb.mybluemix.net1",
+    "localhost"
+    ]
 
 
 # Application definition
