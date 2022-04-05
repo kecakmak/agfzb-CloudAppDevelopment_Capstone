@@ -1,11 +1,11 @@
   applications:
-  - name: djangoapp
+  - name: djangoapp-kerim
     routes:
-      - route: $HOST.$DOMAIN
+      - route: kerim-1.eu-gb.mybluemix.net
     memory: 128M
     buildpack: python_buildpack
-  - name: djangoapp-nginx
+  - name: djangoapp-nginx-kerim
     routes:
-      - route: $HOST.$DOMAIN/static
+      - route: kerim-1.eu-gb.mybluemix.net/static
     memory: 128M
     buildpack: staticfile_buildpack
