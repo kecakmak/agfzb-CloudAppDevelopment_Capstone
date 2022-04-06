@@ -29,6 +29,7 @@ APPEND_SLASH = True
 
 ALLOWED_HOSTS = [
     "kerim-1.eu-gb.mybluemix.net1",
+    "kerim-1.eu-gb.mybluemix.net",
     "localhost"
     ]
 
