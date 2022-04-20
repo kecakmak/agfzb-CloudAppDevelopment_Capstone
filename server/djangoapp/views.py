@@ -6,7 +6,7 @@ from django.contrib import messages
 from datetime import datetime
 from .restapis import get_dealers_from_cf, get_dealers_by_state, get_dealers_by_id, \
                       get_dealer_reviews_from_cf, \
-                      add_dealer_review_to_cf
+                      add_dealer_review_to_cf, post_request
 from .models import CarModel
 import random
 import logging
@@ -144,7 +144,7 @@ def add_review(request, dealer_id=None):
         # Check Authentication
         if user.is_authenticated: 
             review ={}
-            #review["id"] = dealer_id
+            # review["id"] = dealer_id
             review["name"] = request.user.username
             review["review"] = request.POST['content']
             review["dealership"]= dealer_id
@@ -153,9 +153,9 @@ def add_review(request, dealer_id=None):
                 car = CarModel.objects.get(pk=request.POST['car'])
                 review["purchase"] = True
                 review["purchase_date"]= datetime.strptime(request.POST['purchasedate'], "%m/%d/%Y").isoformat()
-                review["car"] = car.car_name
-                review["car_make"] = car.car_make.car_name
-                review["car_year"] = car.car_year.strftime("%Y") 
+                review["car"] = car.name
+                review["car_make"] = car.carmake.name
+                review["car_year"] = car.year 
             else:
                 review["purchase"]= False
                 
@@ -163,7 +163,7 @@ def add_review(request, dealer_id=None):
                 "review": review
             } 
 
-            url_post_review = "https://ec95ec5f.eu-gb.apigw.appdomain.cloud/api/dealership"
+            url_post_review = "https://ec95ec5f.eu-gb.apigw.appdomain.cloud/api/review"
             post_request(url=url_post_review, json_payload = json_payload, dealerId=dealer_id)
             return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
         else:
