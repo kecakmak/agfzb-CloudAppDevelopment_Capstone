@@ -64,6 +64,27 @@ def get_dealers_from_cf(url, **kwargs):
 
     return results
 
+# get_dealers_by_id
+def get_dealers_by_id(url=None, dealerId=None):
+    results = []
+    # Call get_request with a URL parameter
+    json_result = get_request(url, dealerId=dealerId)
+    if json_result:
+        # Get the row list in JSON as dealers
+        dealers = json_result["rows"]
+        # For each dealer object
+        for dealer in dealers:
+            # Get its content in `doc` object
+            dealer_doc = dealer
+            # Create a CarDealer object with values in `doc` object
+            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+                                   id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
+                                   short_name=dealer_doc["short_name"],
+                                   st=dealer_doc["st"], zip=dealer_doc["zip"])
+            results.append(dealer_obj)
+
+    return 
+
 # get_dealers_by_state
 def get_dealers_by_state(url=None, state=None):
     results = []
@@ -89,24 +110,44 @@ def get_dealers_by_state(url=None, state=None):
 # def get_dealer_by_id_from_cf(url, dealerId):
 # - Call get_request() with specified arguments
 # - Parse JSON results into a DealerView object list
-def get_dealer_reviews_from_cf(dealerId):
+def get_dealer_reviews_from_cf(url=None, dealerId=None):
     results = []
-    json_result = get_request(API_URL_REVIEW, dealerId=dealerId)
+    # Call get_request with a URL parameter
+    json_result = get_request(url, dealerId=dealerId)
     if json_result:
-        reviews = json_result["entries"]
-        for review in reviews:
-            sentiment = analyze_review_sentiments(review["review"])
-            dealer_review = DealerReview(id=review["id"],
-                                         name=review["name"],
-                                         dealership=review["dealership"],
-                                         review=review["review"],
-                                         purchase=review["purchase"],
-                                         purchase_date=review["purchase_date"],
-                                         car_make=review["car_make"],
-                                         car_model=review["car_model"],
-                                         car_year=review["car_year"],
-                                         sentiment=sentiment)
-            results.append(dealer_review)
+        # Get the row list in JSON as dealers
+        dealers = json_result["rows"]
+        # For each dealer object
+        for dealer in dealers:
+            # Get its content in `doc` object
+            dealer_doc = dealer
+            # Extracting values from json
+            try: car_make = dealer_doc["car_make"]
+            except Exception: car_make = "None"
+            try: car_model = dealer_doc["car_model"]
+            except Exception: car_model = "None"
+            try: car_year = dealer_doc["car_year"]
+            except Exception: car_year = "None"
+            try: dealership = dealer_doc["dealership"]
+            except Exception: dealership = "None"
+            try: id = dealer_doc["id"]
+            except Exception: id = "None"
+            try: name = dealer_doc["name"]
+            except Exception: name = "None"
+            try: purchase = dealer_doc["purchase"]
+            except Exception: purchase = "None"
+            try: purchase_date = dealer_doc["purchase_date"]
+            except Exception: purchase_date = "None"
+            try: review = dealer_doc["review"]
+            except Exception: review = "None"
+            # Create a CarDealer object with values in `doc` object
+            dealer_obj = DealerReview(car_make=car_make, car_model=car_model, car_year=car_year,
+                                   dealership=dealership, id=id, name=name,
+                                   purchase=purchase,
+                                   purchase_date=purchase_date, review=review)
+            dealer_obj.sentiment = analyze_review_sentiments(dealer_obj.review)
+            results.append(dealer_obj)
+
     return results
 
 def add_dealer_review_to_cf(review_post):
