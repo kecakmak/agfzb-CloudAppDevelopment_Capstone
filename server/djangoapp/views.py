@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
-from .restapis import get_dealerships_from_cf, \
+from .restapis import get_dealers_from_cf, get_dealers_by_state, \
                       get_dealer_reviews_from_cf, \
                       add_dealer_review_to_cf
 from .models import CarModel
@@ -94,7 +94,7 @@ def get_dealerships(request):
     if request.method == "GET":
         url = "https://ec95ec5f.eu-gb.apigw.appdomain.cloud/api/dealership"
         # Get dealers from the URL
-        dealership_list = get_dealerships_from_cf(url)
+        dealership_list = get_dealers_from_cf(url)
         # Get dealers
         context = {
             'dealership_list':dealership_list
