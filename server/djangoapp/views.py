@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
 from datetime import datetime
-from .restapis import get_dealers_from_cf, get_dealers_by_state, \
+from .restapis import get_dealers_from_cf, get_dealers_by_state, get_dealers_by_id, \
                       get_dealer_reviews_from_cf, \
                       add_dealer_review_to_cf
 from .models import CarModel
@@ -116,33 +116,56 @@ def get_dealer_details(request, dealer_id=None):
         dealerships_info = get_dealers_by_id(url = url_dealer, dealerId = dealer_id)
         # Get dealers review
         context = {
-            'dealer_details_list':dealer_details_list,
             'dealerships_info':dealerships_info,
+            'dealer_details_list':dealer_details_list,
         }
         return render(request, 'djangoapp/dealer_details.html', context)
 
 # Create a `add_review` view to submit a review
 # def add_review(request, dealer_id):
 # ...
-def add_dealer_review(request, dealer_id, dealer_name):
-    if request.method == "GET":
-        cars = CarModel.objects.filter(dealer_id=dealer_id)
-        context = { "cars": cars, "dealer_id": dealer_id, "dealer_name": dealer_name }
-        return render(request, 'djangoapp/add_review.html', context)
-    if request.method == "POST" and request.user.is_authenticated:
-        form = request.POST
-        review = {
-            "review_id": random.randint(0, 100),
-            "reviewer_name": form["fullname"],
-            "dealership": dealer_id,
-            "review": form["review"]
+def add_review(request, dealer_id=None):
+    context = {}
+    url_dealer = "https://ec95ec5f.eu-gb.apigw.appdomain.cloud/api/dealership"
+    # If it is a GET request, just render the registration page
+    if request.method == 'GET':
+        dealerships_info = get_dealers_by_id(url = url_dealer, dealerId = dealer_id)
+        cars = CarModel.objects.all().filter(dealer_id = dealer_id)
+        context = {
+            "dealer_id": dealer_id,
+            'dealerships_info': dealerships_info,
+            "cars": cars,
         }
-        if form.get("purchase"):
-            review["purchase"] = True
-            review["purchase_date"] = form["purchasedate"]
-            car = get_object_or_404(CarModel, pk=form["car"])
-            review["car_make"] = car.carmake.name
-            review["car_model"] = car.name
-            review["car_year"]= car.year
-        json_result = add_dealer_review_to_cf(review)
-        return redirect('djangoapp:dealer_reviews', dealer_id=dealer_id, dealer_name=dealer_name)
+        return render(request, 'djangoapp/add_review.html', context)
+    # If it is a POST request
+    elif request.method == 'POST':
+        # Get user object
+        user = request.user
+        # Check Authentication
+        if user.is_authenticated: 
+            review ={}
+            #review["id"] = dealer_id
+            review["name"] = request.user.username
+            review["review"] = request.POST['content']
+            review["dealership"]= dealer_id
+
+            if request.POST.get("purchasecheck") == 'on':
+                car = CarModel.objects.get(pk=request.POST['car'])
+                review["purchase"] = True
+                review["purchase_date"]= datetime.strptime(request.POST['purchasedate'], "%m/%d/%Y").isoformat()
+                review["car"] = car.car_name
+                review["car_make"] = car.car_make.car_name
+                review["car_year"] = car.car_year.strftime("%Y") 
+            else:
+                review["purchase"]= False
+                
+            json_payload = {
+                "review": review
+            } 
+
+            url_post_review = "https://ec95ec5f.eu-gb.apigw.appdomain.cloud/api/dealership"
+            post_request(url=url_post_review, json_payload = json_payload, dealerId=dealer_id)
+            return redirect("djangoapp:dealer_details", dealer_id=dealer_id)
+        else:
+            # Redirect to show_exam_result with the submission id
+            return redirect('djangoapp:registration')

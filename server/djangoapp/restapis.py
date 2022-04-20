@@ -77,13 +77,13 @@ def get_dealers_by_id(url=None, dealerId=None):
             # Get its content in `doc` object
             dealer_doc = dealer
             # Create a CarDealer object with values in `doc` object
-            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+            dealer_obj = CarDealer(did = dealer_doc["_id"], drev= dealer_doc["_rev"], address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
                                    id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
                                    short_name=dealer_doc["short_name"],
                                    st=dealer_doc["st"], zip=dealer_doc["zip"])
             results.append(dealer_obj)
 
-    return 
+    return results
 
 # get_dealers_by_state
 def get_dealers_by_state(url=None, state=None):
@@ -99,7 +99,7 @@ def get_dealers_by_state(url=None, state=None):
             # Get its content in `doc` object
             dealer_doc = dealer
             # Create a CarDealer object with values in `doc` object
-            dealer_obj = CarDealer(address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
+            dealer_obj = CarDealer(did = dealer_doc["_id"], drev= dealer_doc["_rev"], address=dealer_doc["address"], city=dealer_doc["city"], full_name=dealer_doc["full_name"],
                                    id=dealer_doc["id"], lat=dealer_doc["lat"], long=dealer_doc["long"],
                                    short_name=dealer_doc["short_name"],
                                    st=dealer_doc["st"], zip=dealer_doc["zip"])
@@ -116,7 +116,8 @@ def get_dealer_reviews_from_cf(url=None, dealerId=None):
     json_result = get_request(url, dealerId=dealerId)
     if json_result:
         # Get the row list in JSON as dealers
-        dealers = json_result["rows"]
+        dealers1 = json_result["rows"]
+        dealers = dealers1["docs"]
         # For each dealer object
         for dealer in dealers:
             # Get its content in `doc` object
@@ -145,7 +146,8 @@ def get_dealer_reviews_from_cf(url=None, dealerId=None):
                                    dealership=dealership, id=id, name=name,
                                    purchase=purchase,
                                    purchase_date=purchase_date, review=review)
-            dealer_obj.sentiment = analyze_review_sentiments(dealer_obj.review)
+#            dealer_obj.sentiment = analyze_review_sentiments(dealer_obj.review)
+#            dealer_obj.sentiment = "happy"
             results.append(dealer_obj)
 
     return results
