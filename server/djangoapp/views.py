@@ -153,7 +153,7 @@ def add_review(request, dealer_id=None):
                 car = CarModel.objects.get(pk=request.POST['car'])
                 review["purchase"] = True
                 review["purchase_date"]= datetime.strptime(request.POST['purchasedate'], "%m/%d/%Y").isoformat()
-                review["car"] = car.name
+                review["car_model"] = car.name
                 review["car_make"] = car.carmake.name
                 review["car_year"] = car.year 
             else:
