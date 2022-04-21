@@ -1,13 +1,14 @@
 import requests
 import json
+import os
 from .models import CarDealer, DealerReview
 from requests.auth import HTTPBasicAuth
-import os
+
 
 API_URL = 'https://ec95ec5f.eu-gb.apigw.appdomain.cloud'
 API_URL_DEALERSHIP = API_URL + '/api/dealership'
 API_URL_REVIEW = API_URL + '/api/review'
-API_URL_SENTIMENT = API_URL + '/api/sentiment'
+API_URL_SENTIMENT ='https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/b811a98a-a35d-41a0-94ac-8515a51e6ff5/v1/analyse'
 
 
 
@@ -150,7 +151,7 @@ def get_dealer_reviews_from_cf(url=None, dealerId=None):
                                    dealership=dealership, id=id, name=name,
                                    purchase=purchase,
                                    purchase_date=purchase_date, review=review)
-#            dealer_obj.sentiment = analyze_review_sentiments(dealer_obj.review)
+            dealer_obj.sentiment = analyze_review_sentiments(dealer_obj.review)
 #            dealer_obj.sentiment = "happy"
             results.append(dealer_obj)
 
@@ -174,8 +175,19 @@ def add_dealer_review_to_cf(review_post):
 # def analyze_review_sentiments(text):
 # - Call get_request() with specified arguments
 # - Get the returned sentiment label such as Positive or Negative
-def analyze_review_sentiments(text):
-    results = []
-    json_result = get_request(API_URL_SENTIMENT, text=text)
-    if json_result:
-        return json_result.get('label', 'neutral')
+
+
+def analyze_review_sentiments(review):
+    params = dict()
+    params["text"] = review
+    params["version"] = "2018-09-21"
+    params["features"] = dict(sentiment=dict())
+    params["return_analyzed_text"] = True
+    params["language"] = "en"
+
+    url = 'https://api.eu-gb.natural-language-understanding.watson.cloud.ibm.com/instances/7ad8836d-29bb-40fe-aeb5-455f35da37c5/v1/analyze'
+    
+    response = requests.get(url, params=params, headers={'Content-Type': 'application/json'},
+                            auth=HTTPBasicAuth('apikey', os.getenv('NLU_API_KEY', 'mw5eBvyGZn0GL265s4JdKjYTK-Uuids66WTUvnNsFvMN')))
+
+    return json.loads(response.text)['sentiment']['document']['label']
